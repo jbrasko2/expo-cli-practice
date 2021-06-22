@@ -2,8 +2,39 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import logo from './assets/logo.png';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function App() {
+  const [selectedImage, setSelectedImage] = React.useState(null)
+
+  let openImagePickerAsync = async () => {
+    let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("Permission to acccess camera roll is required!");
+      return;
+    }
+
+    let pickerResult = await ImagePicker.launchImageLibraryAsync();
+    
+    if (pickerResult.cancelled === true) {
+      return;
+    }
+
+    setSelectedImage({localUri: pickerResult.uri});
+  }
+
+  if (selectedImage !== null) {
+    return (
+      <View style={styles.container}>
+        <Image
+          source={{uri: selectedImage.localUri}}
+          style={styles.thumbnail}
+        />
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <Image source={{uri: "https://i.imgur.com/TkIrScD.png"}} style={styles.logo} />
@@ -14,7 +45,7 @@ export default function App() {
       </Text>
 
       <TouchableOpacity
-        onPress={() => alert('Hello, world!')}
+        onPress={openImagePickerAsync}
         style={styles.button}
       >
         <Text style={styles.buttonText}>Pick a photo</Text>
@@ -49,5 +80,10 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     color: '#fff'
+  },
+  thumbnail: {
+    width: 300,
+    height: 300,
+    resizeMode: "contain"
   }
 });
